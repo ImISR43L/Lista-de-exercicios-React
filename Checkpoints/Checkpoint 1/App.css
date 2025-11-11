@@ -1,0 +1,36 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.painel {
+  background-color: #2c313a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 15px 30px;
+}
+
+.info-bloco {
+  background-color: #3a404d;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-bottom: 20px; 
+}
+
+h1 {
+  color: #61dafb;
+}
+
+h2 {
+  border-bottom: 1px solid #555;
+  padding-bottom: 5px;
+}
+ul, ol {
+  padding-left: 25px;
+}
+
+li {
+  padding: 3px 0;
+}
