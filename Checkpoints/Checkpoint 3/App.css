@@ -1,29 +1,28 @@
 .header-spotify {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #000;
+  box-sizing: border-box;
+}
+
+.spotify-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .flex-container {
   display: flex;
   align-items: center;
-}
-
-.header-spotify {
-  margin: 0;
-  justify-content: center;
-  gap: 20px;
+  gap: 10px;
 }
 
 .logo-spotify,
 .auth-button {
-  flex: 0 1 auto;
-}
-
-#button-logo-spotify {
-  background: transparent;
-}
-
-#button-logo-spotify:hover {
-  background-color: none;
+  flex-shrink: 0;
 }
 
 #botao-voltar-header {
@@ -33,4 +32,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.search-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.music-search {
+  width: 350px;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  padding: 5px 8px;
+}
+
+.music-name {
+  width: 50px;
+  height: 100%;
+}
+
+.music-controller {
+  width: 60%;
 }
