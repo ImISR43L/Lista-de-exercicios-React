@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./style.css";
 
-// --- FUNÇÃO AUXILIAR: EMBARALHAR ARRAY ---
 const shuffleArray = (array) => {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -11,7 +10,6 @@ const shuffleArray = (array) => {
   return newArray;
 };
 
-// --- ÍCONES (SVG) ---
 const HomeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.5 3.2L21 11H18V20H13V14H11V20H6V11H3L11.5 3.2C11.8 3 12.2 3 12.5 3.2Z" />
@@ -149,7 +147,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-// --- DADOS MOCKADOS ---
 const MOCK_SONGS = [
   {
     id: 1,
@@ -224,8 +221,6 @@ const MOCK_PLAYLISTS = [
     songs: [2, 3],
   },
 ];
-
-// --- COMPONENTES AUXILIARES ---
 
 const Header = ({
   searchQuery,
@@ -506,7 +501,6 @@ const Player = ({
   );
 };
 
-// --- MAIN VIEW ---
 const MainView = ({
   searchQuery,
   playlists,
@@ -523,7 +517,7 @@ const MainView = ({
   onDeletePlaylist,
   likedPlaylists,
   togglePlaylistLike,
-  onPlayPlaylist, // Nova prop recebida do App
+  onPlayPlaylist,
 }) => {
   const isSearching = searchQuery.length > 0;
 
@@ -981,7 +975,6 @@ const MainView = ({
                 <div className="card-title">{playlist.title}</div>
                 <div className="card-desc">{playlist.desc}</div>
 
-                {/* BOTÃO PLAY VERDE - AGORA CLICÁVEL */}
                 <div
                   className="play-btn-hover"
                   onClick={(e) => {
@@ -992,7 +985,6 @@ const MainView = ({
                   <PlayIcon />
                 </div>
 
-                {/* BOTÃO DE LIKE NOS CARDS */}
                 <button
                   className={`card-like-btn ${
                     likedPlaylists.has(playlist.id) ? "is-liked" : ""
@@ -1023,7 +1015,6 @@ const MainView = ({
   );
 };
 
-// --- APP PRINCIPAL ---
 export default function SpotifyClone() {
   const [playlists, setPlaylists] = useState(MOCK_PLAYLISTS);
   const [likedSongs, setLikedSongs] = useState(new Set());
