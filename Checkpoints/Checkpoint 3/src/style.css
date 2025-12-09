@@ -24,16 +24,16 @@ body {
   overflow: hidden;
 }
 
-/* --- Layout Principal (Grid) --- */
+/* --- Layout --- */
 .spotify-clone {
   display: grid;
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 1fr 90px; /* Conteúdo / Player */
+  grid-template-rows: 1fr 90px;
   height: 100vh;
   width: 100vw;
 }
 
-/* --- Sidebar (Parte da Navegação) --- */
+/* --- Sidebar --- */
 .sidebar {
   background-color: var(--bg-black);
   padding: 24px;
@@ -42,6 +42,8 @@ body {
   gap: 24px;
   grid-row: 1 / 2;
   grid-column: 1 / 2;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .logo {
@@ -68,7 +70,6 @@ body {
   align-items: center;
   gap: 12px;
 }
-
 .nav-item:hover,
 .nav-item.active {
   color: var(--text-white);
@@ -80,20 +81,55 @@ body {
   margin: 8px 0;
 }
 
-/* --- Main Content Area Wrapper --- */
+/* Área de Scroll da Playlist na Sidebar */
+.playlist-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 8px;
+}
+.playlist-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+.playlist-scroll-area::-webkit-scrollbar-thumb {
+  background-color: #535353;
+  border-radius: 4px;
+}
+.playlist-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-playlist-item {
+  color: var(--text-gray);
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+.sidebar-playlist-item:hover {
+  color: var(--text-white);
+}
+.sidebar-playlist-item.active {
+  color: var(--primary-green);
+}
+
+/* --- Main View --- */
 .main-view {
   background-color: var(--bg-dark);
   grid-row: 1 / 2;
   grid-column: 2 / 3;
   overflow-y: auto;
   position: relative;
-  border-radius: 8px; /* Design moderno do Spotify */
+  border-radius: 8px;
   margin: 8px 8px 0 0;
 }
 
-/* --- Componente: Header --- */
+/* --- Header --- */
 .header {
-  background-color: rgba(18, 18, 18, 0.8); /* Translúcido */
+  background-color: rgba(18, 18, 18, 0.8);
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
@@ -103,12 +139,10 @@ body {
   z-index: 100;
   height: 64px;
 }
-
 .header-navigation {
   display: flex;
   gap: 16px;
 }
-
 .nav-btn {
   background-color: rgba(0, 0, 0, 0.7);
   border: none;
@@ -121,14 +155,12 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-
 .search-bar-container {
   flex: 1;
   max-width: 360px;
   margin: 0 24px;
   position: relative;
 }
-
 .search-input {
   width: 100%;
   padding: 10px 40px;
@@ -138,7 +170,6 @@ body {
   background-color: var(--bg-elevated);
   font-size: 14px;
 }
-
 .user-menu {
   background-color: rgba(0, 0, 0, 0.7);
   padding: 4px;
@@ -148,7 +179,6 @@ body {
   gap: 8px;
   cursor: pointer;
 }
-
 .user-avatar {
   width: 28px;
   height: 28px;
@@ -159,30 +189,17 @@ body {
   justify-content: center;
   font-size: 12px;
 }
-
 .user-name {
   font-weight: 700;
   font-size: 14px;
   margin-right: 8px;
 }
 
-/* Placeholder para as próximas partes */
-.placeholder-content {
-  padding: 32px;
-  color: var(--text-gray);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 80%;
-}
-
-/* --- Parte 2: Main Page Styles --- */
-
+/* --- Content & Cards --- */
 .content-spacing {
   padding: 24px 32px;
-  padding-bottom: 100px; /* Espaço para o Player (Parte 3) não cobrir o conteúdo */
+  padding-bottom: 100px;
 }
-
 .section-title {
   font-size: 24px;
   font-weight: 700;
@@ -190,14 +207,12 @@ body {
   letter-spacing: -0.04em;
 }
 
-/* Grid de Cards (Playlists/Álbuns) */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
 }
-
 .card {
   background-color: #181818;
   padding: 16px;
@@ -208,11 +223,9 @@ body {
   display: flex;
   flex-direction: column;
 }
-
 .card:hover {
   background-color: #282828;
 }
-
 .card-image {
   width: 100%;
   aspect-ratio: 1;
@@ -221,7 +234,6 @@ body {
   margin-bottom: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
-
 .card-title {
   font-weight: 700;
   font-size: 16px;
@@ -230,7 +242,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .card-desc {
   font-size: 14px;
   color: var(--text-gray);
@@ -240,11 +251,11 @@ body {
   overflow: hidden;
 }
 
-/* Botão Play Verde (Hover no Card) */
+/* Botão Play no Card */
 .play-btn-hover {
   position: absolute;
   right: 20px;
-  bottom: 80px; /* Ajustado para ficar acima do texto */
+  bottom: 80px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -257,86 +268,49 @@ body {
   transform: translateY(8px);
   transition: all 0.3s ease;
   box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
 }
-
 .card:hover .play-btn-hover {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Lista de Músicas (Modo Busca/Playlist) */
-.song-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.song-row {
-  display: grid;
-  grid-template-columns: 50px 4fr 3fr 50px 60px; /* # | Título | Álbum | Like | Duração */
-  padding: 10px 16px;
-  border-radius: 4px;
-  align-items: center;
-  color: var(--text-gray);
-  font-size: 14px;
-}
-
-.song-row:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.song-row.active {
-  color: var(--primary-green);
-}
-
-.song-title-col {
+/* Botão de Like no Card */
+.card-like-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--text-white);
-}
-
-.song-img-small {
-  width: 40px;
-  height: 40px;
-}
-
-.song-info-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.song-artist-name {
-  font-size: 12px;
-  color: var(--text-gray);
-}
-
-.like-btn {
-  background: none;
-  border: none;
+  justify-content: center;
   cursor: pointer;
-  color: var(--text-gray);
-  transition: color 0.2s;
+  z-index: 20;
+  opacity: 0;
+  transition: all 0.2s ease;
+  color: #ffffff !important;
+}
+.card:hover .card-like-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+.card-like-btn:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+.card-like-btn.is-liked {
+  opacity: 1;
+  color: var(--primary-green) !important;
+}
+.card-like-btn svg {
+  color: inherit;
 }
 
-.like-btn.liked {
-  color: var(--primary-green);
-}
-
-/* Botão de Criar Playlist (Estilo) */
-.create-playlist-btn {
-  background-color: var(--text-white);
-  color: black;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 500px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 10px;
-  font-size: 12px;
-}
-
-/* --- Parte 3: Player Styles --- */
-
+/* --- Player Footer (CORREÇÕES AQUI) --- */
 .player-footer {
   grid-row: 2 / 3;
   grid-column: 1 / 3;
@@ -347,44 +321,47 @@ body {
   justify-content: space-between;
   align-items: center;
   z-index: 200;
+  height: 90px; /* Altura fixa para evitar distorção */
 }
 
-/* Esquerda: Informações da Música */
+/* Esquerda: Informações */
 .now-playing {
   display: flex;
   align-items: center;
   width: 30%;
   min-width: 180px;
 }
-
 .album-cover-sm {
   width: 56px;
   height: 56px;
   border-radius: 4px;
   margin-right: 14px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0; /* IMPEDE QUE A IMAGEM ENCOLHA */
+  object-fit: cover;
 }
-
 .track-info {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-right: 14px;
+  overflow: hidden; /* Evita que texto empurre layout */
 }
-
 .track-name {
   color: var(--text-white);
   font-size: 14px;
   font-weight: 400;
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 .artist-name {
   color: var(--text-gray);
   font-size: 11px;
 }
 
-/* Centro: Controles de Reprodução */
+/* Centro: Controles */
 .player-controls {
   width: 40%;
   display: flex;
@@ -393,14 +370,12 @@ body {
   justify-content: center;
   gap: 8px;
 }
-
 .control-buttons {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 4px;
 }
-
 .control-btn {
   background: none;
   border: none;
@@ -410,12 +385,11 @@ body {
   align-items: center;
   justify-content: center;
   transition: color 0.2s, transform 0.1s;
+  flex-shrink: 0; /* IMPEDE QUE OS BOTÕES ENCOLHAM */
 }
-
 .control-btn:hover {
   color: var(--text-white);
 }
-
 .control-btn.active {
   color: var(--primary-green);
 }
@@ -430,14 +404,13 @@ body {
   align-items: center;
   justify-content: center;
   transition: transform 0.2s, background-color 0.2s;
+  flex-shrink: 0; /* IMPEDE DISTORÇÃO */
 }
-
 .play-pause-btn:hover {
   transform: scale(1.05);
   background-color: #f0f0f0;
 }
 
-/* Barra de Progresso */
 .playback-bar {
   width: 100%;
   display: flex;
@@ -446,8 +419,6 @@ body {
   font-size: 11px;
   color: var(--text-gray);
 }
-
-/* Estilização Customizada dos Inputs (Range) */
 .progress-range {
   -webkit-appearance: none;
   background: transparent;
@@ -456,16 +427,12 @@ body {
   border-radius: 2px;
   cursor: pointer;
 }
-
-/* Trilho (Track) */
 .progress-range::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   background-color: #4d4d4d;
   border-radius: 2px;
 }
-
-/* Bolinha (Thumb) - só aparece no hover do container no Spotify real, mas aqui deixaremos visível para usabilidade */
 .progress-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 12px;
@@ -474,11 +441,10 @@ body {
   background: var(--text-white);
   margin-top: -4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  display: none; /* Oculto por padrão */
+  display: none;
 }
-
 .playback-bar:hover .progress-range::-webkit-slider-thumb {
-  display: block; /* Visível ao passar o mouse */
+  display: block;
 }
 
 /* Direita: Volume */
@@ -489,7 +455,64 @@ body {
   align-items: center;
   gap: 12px;
 }
-
+.volume-controls svg {
+  flex-shrink: 0; /* CORREÇÃO DO ÍCONE DE VOLUME */
+}
 .volume-bar {
   width: 90px;
+}
+
+/* Song List */
+.song-list {
+  display: flex;
+  flex-direction: column;
+}
+.song-row {
+  display: grid;
+  grid-template-columns: 50px 4fr 3fr 50px 60px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  align-items: center;
+  color: var(--text-gray);
+  font-size: 14px;
+  cursor: pointer;
+}
+.song-row:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.song-row.group:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.song-title-col {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-white);
+}
+.song-img-small {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.song-info-text {
+  display: flex;
+  flex-direction: column;
+}
+.song-artist-name {
+  font-size: 12px;
+  color: var(--text-gray);
+}
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-gray);
+  transition: color 0.2s;
+}
+.like-btn.liked {
+  color: var(--primary-green);
+}
+.remove-btn:hover {
+  color: #ff5555;
 }

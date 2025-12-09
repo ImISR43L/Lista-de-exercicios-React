@@ -1,5 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./style.css";
+
+// --- FUNÇÃO AUXILIAR: EMBARALHAR ARRAY ---
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
 
 // --- ÍCONES (SVG) ---
 const HomeIcon = () => (
@@ -59,23 +69,34 @@ const VolumeIcon = () => (
     <path d="M9.741.596A.75.75 0 0 0 9 1.334v13.333a.75.75 0 0 0 1.258.553l.223-.19a6 6 0 0 0 0-9.057l-.223-.19a.75.75 0 0 0-.517-.187zM2.879 4.834A2.119 2.119 0 0 0 1.5 6.75v2.5c0 .799.444 1.493 1.094 1.83.693 2.158 2.723 3.714 5.073 3.714.28 0 .553-.022.818-.065.756-.122 1.257-.84 1.134-1.596l-.664-4.085a6.002 6.002 0 0 0 0-1.996l.664-4.086c.123-.755-.378-1.473-1.134-1.595a6.76 6.76 0 0 0-.818-.065c-2.35 0-4.38 1.556-5.073 3.714z" />
   </svg>
 );
-const HeartIcon = ({ filled }) =>
-  filled ? (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+
+const HeartIcon = ({ filled }) => {
+  const iconColor = filled ? "#1db954" : "#ffffff";
+  return filled ? (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 16 16"
+      fill={iconColor}
+      style={{ color: iconColor }}
+    >
       <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
     </svg>
   ) : (
     <svg
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 16 16"
       fill="none"
-      stroke="currentColor"
+      stroke={iconColor}
       strokeWidth="1.5"
+      style={{ color: iconColor }}
     >
       <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
     </svg>
   );
+};
+
 const RepeatIcon = ({ mode }) => {
   const color = mode !== "off" ? "#1db954" : "currentColor";
   return (
@@ -270,47 +291,80 @@ const Sidebar = ({
   onHomeClick,
   onLikedClick,
   currentView,
-}) => (
-  <aside className="sidebar">
-    <div className="logo">Spotify Clone</div>
-    <ul className="nav-links">
-      <li
-        className={`nav-item ${currentView === "home" ? "active" : ""}`}
-        onClick={onHomeClick}
-      >
-        <HomeIcon /> Início
-      </li>
-      <li className="nav-item">
-        <SearchIcon /> Buscar
-      </li>
-      <li className="nav-item">
-        <LibraryIcon /> Sua Biblioteca
-      </li>
-    </ul>
-    <div className="divider"></div>
-    <ul className="nav-links">
-      <li className="nav-item" onClick={createPlaylist}>
-        <span
-          style={{
-            background: "white",
-            color: "black",
-            padding: "0 4px",
-            marginRight: "8px",
-          }}
+  playlists,
+  likedPlaylists,
+  onOpenPlaylist,
+  activePlaylist,
+}) => {
+  const sidebarList = playlists.filter(
+    (p) => p.isUserCreated || likedPlaylists.has(p.id)
+  );
+
+  return (
+    <aside className="sidebar">
+      <div className="logo">Spotify Clone</div>
+      <ul className="nav-links">
+        <li
+          className={`nav-item ${currentView === "home" ? "active" : ""}`}
+          onClick={onHomeClick}
         >
-          +
-        </span>{" "}
-        Criar playlist
-      </li>
-      <li
-        className={`nav-item ${currentView === "liked" ? "active" : ""}`}
-        onClick={onLikedClick}
-      >
-        ❤️ Músicas Curtidas
-      </li>
-    </ul>
-  </aside>
-);
+          <HomeIcon /> Início
+        </li>
+        <li className="nav-item">
+          <SearchIcon /> Buscar
+        </li>
+        <li className="nav-item">
+          <LibraryIcon /> Sua Biblioteca
+        </li>
+      </ul>
+      <div className="divider"></div>
+      <ul className="nav-links">
+        <li className="nav-item" onClick={createPlaylist}>
+          <span
+            style={{
+              background: "white",
+              color: "black",
+              padding: "0 4px",
+              marginRight: "8px",
+            }}
+          >
+            +
+          </span>{" "}
+          Criar playlist
+        </li>
+        <li
+          className={`nav-item ${currentView === "liked" ? "active" : ""}`}
+          onClick={onLikedClick}
+        >
+          ❤️ Músicas Curtidas
+        </li>
+      </ul>
+
+      <div className="divider"></div>
+      <div className="playlist-scroll-area">
+        {sidebarList.length > 0 ? (
+          sidebarList.map((playlist) => (
+            <div
+              key={playlist.id}
+              className={`sidebar-playlist-item ${
+                activePlaylist && activePlaylist.id === playlist.id
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() => onOpenPlaylist(playlist)}
+            >
+              {playlist.title}
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: "12px", color: "#b3b3b3", padding: "0 8px" }}>
+            Suas playlists aparecerão aqui.
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+};
 
 const Player = ({
   currentSong,
@@ -321,10 +375,13 @@ const Player = ({
   onSongEnd,
   repeatMode,
   toggleRepeat,
+  isShuffled,
+  toggleShuffle,
+  onSkipNext,
+  onSkipPrev,
 }) => {
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(50);
-  const [shuffle, setShuffle] = useState(false);
 
   const formatTime = (secondsSource) => {
     const minutes = Math.floor(secondsSource / 60);
@@ -349,7 +406,16 @@ const Player = ({
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, currentSong, setIsPlaying, repeatMode, onSongEnd]); // Corrigido: dependências completas
+  }, [isPlaying, currentSong, repeatMode, onSongEnd]);
+
+  const handlePrevClick = () => {
+    const currentTime = (progress / 100) * currentSong.duration;
+    if (currentTime > 3) {
+      setProgress(0);
+    } else {
+      onSkipPrev();
+    }
+  };
 
   if (!currentSong) return <div className="player-footer"></div>;
   const currentTime = (progress / 100) * currentSong.duration;
@@ -374,12 +440,12 @@ const Player = ({
       <div className="player-controls">
         <div className="control-buttons">
           <button
-            className={`control-btn ${shuffle ? "active" : ""}`}
-            onClick={() => setShuffle(!shuffle)}
+            className={`control-btn ${isShuffled ? "active" : ""}`}
+            onClick={toggleShuffle}
           >
-            <ShuffleIcon active={shuffle} />
+            <ShuffleIcon active={isShuffled} />
           </button>
-          <button className="control-btn">
+          <button className="control-btn" onClick={handlePrevClick}>
             <SkipBackIcon />
           </button>
           <button
@@ -396,7 +462,7 @@ const Player = ({
               </span>
             )}
           </button>
-          <button className="control-btn">
+          <button className="control-btn" onClick={onSkipNext}>
             <SkipForwardIcon />
           </button>
           <button className={`control-btn`} onClick={toggleRepeat}>
@@ -440,7 +506,7 @@ const Player = ({
   );
 };
 
-// --- MAIN VIEW (Corrigida e Otimizada) ---
+// --- MAIN VIEW ---
 const MainView = ({
   searchQuery,
   playlists,
@@ -454,11 +520,13 @@ const MainView = ({
   onRenamePlaylist,
   onAddSongToPlaylist,
   onRemoveSongFromPlaylist,
+  onDeletePlaylist,
+  likedPlaylists,
+  togglePlaylistLike,
+  onPlayPlaylist, // Nova prop recebida do App
 }) => {
   const isSearching = searchQuery.length > 0;
 
-  // CORREÇÃO: Removemos useEffect. Usamos valor inicial direto.
-  // Graças ao 'key' no App.jsx, este componente será recriado se a playlist mudar.
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(
     activePlaylist ? activePlaylist.title : ""
@@ -554,15 +622,44 @@ const MainView = ({
               }}
             />
             <div style={{ flex: 1 }}>
-              <p
+              <div
                 style={{
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                Playlist {activePlaylist.isUserCreated ? "• Editável" : ""}
-              </p>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Playlist {activePlaylist.isUserCreated ? "• Editável" : ""}
+                </p>
+
+                {activePlaylist.isUserCreated && (
+                  <button
+                    onClick={() => onDeletePlaylist(activePlaylist.id)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid #b3b3b3",
+                      color: "#ff5555",
+                      borderRadius: "20px",
+                      padding: "5px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                    }}
+                  >
+                    <TrashIcon /> Apagar Playlist
+                  </button>
+                )}
+              </div>
 
               {isEditingTitle && activePlaylist.isUserCreated ? (
                 <input
@@ -606,7 +703,31 @@ const MainView = ({
                 </h1>
               )}
 
-              <p style={{ color: "#b3b3b3" }}>{activePlaylist.desc}</p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  marginTop: "8px",
+                }}
+              >
+                <button
+                  onClick={() => togglePlaylistLike(activePlaylist.id)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    color: likedPlaylists.has(activePlaylist.id)
+                      ? "#1db954"
+                      : "#b3b3b3",
+                  }}
+                >
+                  <HeartIcon filled={likedPlaylists.has(activePlaylist.id)} />
+                </button>
+                <p style={{ color: "#b3b3b3", margin: 0 }}>
+                  {activePlaylist.desc}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -616,6 +737,7 @@ const MainView = ({
                 <div
                   key={`${song.id}-${index}`}
                   className="song-row group"
+                  style={{ gridTemplateColumns: "50px 4fr 3fr 100px 60px" }}
                   onClick={() =>
                     playSong(song, getPlaylistSongs(activePlaylist))
                   }
@@ -677,7 +799,6 @@ const MainView = ({
               </div>
             )}
           </div>
-
           {activePlaylist.isUserCreated && (
             <div
               style={{
@@ -717,7 +838,10 @@ const MainView = ({
                     <div
                       key={`add-${song.id}`}
                       className="song-row"
-                      style={{ cursor: "default" }}
+                      style={{
+                        cursor: "default",
+                        gridTemplateColumns: "1fr auto",
+                      }}
                     >
                       <div className="song-title-col">
                         <img src={song.img} alt="" className="song-img-small" />
@@ -847,6 +971,7 @@ const MainView = ({
                 key={playlist.id}
                 className="card"
                 onClick={() => onOpenPlaylist(playlist)}
+                style={{ position: "relative" }}
               >
                 <img
                   src={playlist.img}
@@ -855,9 +980,40 @@ const MainView = ({
                 />
                 <div className="card-title">{playlist.title}</div>
                 <div className="card-desc">{playlist.desc}</div>
-                <div className="play-btn-hover">
+
+                {/* BOTÃO PLAY VERDE - AGORA CLICÁVEL */}
+                <div
+                  className="play-btn-hover"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPlayPlaylist(playlist);
+                  }}
+                >
                   <PlayIcon />
                 </div>
+
+                {/* BOTÃO DE LIKE NOS CARDS */}
+                <button
+                  className={`card-like-btn ${
+                    likedPlaylists.has(playlist.id) ? "is-liked" : ""
+                  }`}
+                  style={{
+                    color: likedPlaylists.has(playlist.id)
+                      ? "#1db954"
+                      : "#ffffff",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlaylistLike(playlist.id);
+                  }}
+                  title={
+                    likedPlaylists.has(playlist.id)
+                      ? "Remover dos favoritos"
+                      : "Adicionar aos favoritos"
+                  }
+                >
+                  <HeartIcon filled={likedPlaylists.has(playlist.id)} />
+                </button>
               </div>
             ))}
           </div>
@@ -871,10 +1027,14 @@ const MainView = ({
 export default function SpotifyClone() {
   const [playlists, setPlaylists] = useState(MOCK_PLAYLISTS);
   const [likedSongs, setLikedSongs] = useState(new Set());
+  const [likedPlaylists, setLikedPlaylists] = useState(new Set());
+
   const [currentSong, setCurrentSong] = useState(MOCK_SONGS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState(MOCK_SONGS);
   const [repeatMode, setRepeatMode] = useState("off");
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [originalQueue, setOriginalQueue] = useState(MOCK_SONGS);
 
   const [history, setHistory] = useState([
     { view: "home", activePlaylist: null, searchQuery: "" },
@@ -886,103 +1046,187 @@ export default function SpotifyClone() {
   const activePlaylist = currentState.activePlaylist;
   const searchQuery = currentState.searchQuery;
 
-  // IMPORTANTE: Busca a versão mais atual da playlist para edição em tempo real
   const currentActivePlaylist = activePlaylist
     ? playlists.find((p) => p.id === activePlaylist.id)
     : null;
 
-  const navigateTo = (newView, newPlaylist = null, newSearch = "") => {
-    if (
-      view === newView &&
-      activePlaylist?.id === newPlaylist?.id &&
-      searchQuery === newSearch
-    )
-      return;
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({
-      view: newView,
-      activePlaylist: newPlaylist,
-      searchQuery: newSearch,
-    });
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
+  const navigateTo = useCallback(
+    (newView, newPlaylist = null, newSearch = "") => {
+      setHistory((prev) => {
+        const sliced = prev.slice(0, historyIndex + 1);
+        sliced.push({
+          view: newView,
+          activePlaylist: newPlaylist,
+          searchQuery: newSearch,
+        });
+        return sliced;
+      });
+      setHistoryIndex((prev) => prev + 1);
+    },
+    [historyIndex]
+  );
 
-  const navigateBack = () => {
-    if (historyIndex > 0) setHistoryIndex(historyIndex - 1);
-  };
-  const navigateForward = () => {
-    if (historyIndex < history.length - 1) setHistoryIndex(historyIndex + 1);
-  };
+  const navigateBack = useCallback(() => {
+    if (historyIndex > 0) setHistoryIndex((h) => h - 1);
+  }, [historyIndex]);
+  const navigateForward = useCallback(() => {
+    if (historyIndex < history.length - 1) setHistoryIndex((h) => h + 1);
+  }, [historyIndex, history.length]);
 
   const setSearchQuery = (val) => {
-    const newHistory = [...history];
-    newHistory[historyIndex] = { ...currentState, searchQuery: val };
-    setHistory(newHistory);
+    setHistory((prev) => {
+      const newH = [...prev];
+      newH[historyIndex] = { ...newH[historyIndex], searchQuery: val };
+      return newH;
+    });
   };
 
-  const toggleLike = (id) => {
-    const newLiked = new Set(likedSongs);
-    if (newLiked.has(id)) newLiked.delete(id);
-    else newLiked.add(id);
-    setLikedSongs(newLiked);
-  };
+  const toggleLike = useCallback((id) => {
+    setLikedSongs((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  }, []);
 
-  // Funções de Playlist
-  const createPlaylist = () => {
-    const newId = playlists.length + 1;
+  const togglePlaylistLike = useCallback((id) => {
+    setLikedPlaylists((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  }, []);
+
+  const createPlaylist = useCallback(() => {
+    const newId = Date.now();
     const newPlaylist = {
       id: newId,
-      title: `Minha Playlist #${playlists.length - 2}`,
+      title: `Nova Playlist`,
       desc: "Playlist criada por você",
-      img: `https://picsum.photos/seed/${newId + 100}/200`,
+      img: `https://picsum.photos/seed/${newId}/200`,
       isUserCreated: true,
       songs: [],
     };
-    setPlaylists([...playlists, newPlaylist]);
-    navigateTo("playlist", newPlaylist, "");
-  };
+    setPlaylists((prev) => [...prev, newPlaylist]);
+    setHistory((prev) => [
+      ...prev,
+      { view: "playlist", activePlaylist: newPlaylist, searchQuery: "" },
+    ]);
+    setHistoryIndex((prev) => prev + 1);
+  }, []);
 
-  const renamePlaylist = (playlistId, newName) => {
-    setPlaylists(
-      playlists.map((p) => (p.id === playlistId ? { ...p, title: newName } : p))
+  const deletePlaylist = useCallback(
+    (playlistId) => {
+      setPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
+      setLikedPlaylists((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(playlistId);
+        return newSet;
+      });
+
+      if (activePlaylist && activePlaylist.id === playlistId) {
+        setHistory((prev) => [
+          ...prev,
+          { view: "home", activePlaylist: null, searchQuery: "" },
+        ]);
+        setHistoryIndex((prev) => prev + 1);
+      }
+    },
+    [activePlaylist]
+  );
+
+  const renamePlaylist = useCallback((playlistId, newName) => {
+    setPlaylists((prev) =>
+      prev.map((p) => (p.id === playlistId ? { ...p, title: newName } : p))
     );
-  };
+  }, []);
 
-  const addSongToPlaylist = (playlistId, songId) => {
-    setPlaylists(
-      playlists.map((p) =>
+  const addSongToPlaylist = useCallback((playlistId, songId) => {
+    setPlaylists((prev) =>
+      prev.map((p) =>
         p.id === playlistId && !p.songs.includes(songId)
           ? { ...p, songs: [...p.songs, songId] }
           : p
       )
     );
-  };
+  }, []);
 
-  const removeSongFromPlaylist = (playlistId, songId) => {
-    setPlaylists(
-      playlists.map((p) =>
+  const removeSongFromPlaylist = useCallback((playlistId, songId) => {
+    setPlaylists((prev) =>
+      prev.map((p) =>
         p.id === playlistId
           ? { ...p, songs: p.songs.filter((id) => id !== songId) }
           : p
       )
     );
-  };
+  }, []);
 
-  // Funções do Player
-  const playSong = (song, contextList) => {
-    setCurrentSong(song);
-    setQueue(contextList || MOCK_SONGS);
-    setIsPlaying(true);
-  };
+  const playSong = useCallback(
+    (song, contextList) => {
+      setCurrentSong(song);
+      const listToUse = contextList || MOCK_SONGS;
+      setOriginalQueue(listToUse);
+      setQueue((prev) => (isShuffled ? shuffleArray(listToUse) : listToUse));
+      setIsPlaying(true);
+    },
+    [isShuffled]
+  );
 
-  const toggleRepeat = () => {
-    if (repeatMode === "off") setRepeatMode("all");
-    else if (repeatMode === "all") setRepeatMode("one");
-    else setRepeatMode("off");
-  };
+  const toggleRepeat = useCallback(() => {
+    setRepeatMode((prev) => {
+      if (prev === "off") return "all";
+      if (prev === "all") return "one";
+      return "off";
+    });
+  }, []);
 
-  const handleSongEnd = () => {
+  const toggleShuffle = useCallback(() => {
+    setIsShuffled((prev) => {
+      const newState = !prev;
+      if (newState) setQueue(shuffleArray(originalQueue));
+      else setQueue(originalQueue);
+      return newState;
+    });
+  }, [originalQueue]);
+
+  const skipNext = useCallback(() => {
+    const currentIndex = queue.findIndex((s) => s.id === currentSong.id);
+    if (currentIndex >= 0 && currentIndex < queue.length - 1) {
+      setCurrentSong(queue[currentIndex + 1]);
+      setIsPlaying(true);
+    } else if (repeatMode === "all") {
+      setCurrentSong(queue[0]);
+      setIsPlaying(true);
+    }
+  }, [queue, currentSong, repeatMode]);
+
+  const skipPrev = useCallback(() => {
+    const currentIndex = queue.findIndex((s) => s.id === currentSong.id);
+    if (currentIndex > 0) {
+      setCurrentSong(queue[currentIndex - 1]);
+      setIsPlaying(true);
+    } else if (repeatMode === "all") {
+      setCurrentSong(queue[queue.length - 1]);
+      setIsPlaying(true);
+    }
+  }, [queue, currentSong, repeatMode]);
+
+  // FUNÇÃO DE TOCAR PLAYLIST PELO CARD
+  const handlePlayPlaylist = useCallback(
+    (playlist) => {
+      const playlistSongs = playlist.songs
+        .map((id) => MOCK_SONGS.find((s) => s.id === id))
+        .filter(Boolean);
+      if (playlistSongs.length > 0) {
+        playSong(playlistSongs[0], playlistSongs);
+      }
+    },
+    [playSong]
+  );
+
+  const handleSongEnd = useCallback(() => {
     const currentIndex = queue.findIndex((s) => s.id === currentSong.id);
     if (currentIndex >= 0 && currentIndex < queue.length - 1) {
       setCurrentSong(queue[currentIndex + 1]);
@@ -995,11 +1239,29 @@ export default function SpotifyClone() {
         setIsPlaying(false);
       }
     }
-  };
+  }, [queue, currentSong, repeatMode]);
 
-  const goToHome = () => navigateTo("home", null, "");
-  const goToLiked = () => navigateTo("liked", null, "");
-  const openPlaylist = (playlist) => navigateTo("playlist", playlist, "");
+  const goToHome = () => {
+    setHistory((h) => [
+      ...h.slice(0, historyIndex + 1),
+      { view: "home", activePlaylist: null, searchQuery: "" },
+    ]);
+    setHistoryIndex((i) => i + 1);
+  };
+  const goToLiked = () => {
+    setHistory((h) => [
+      ...h.slice(0, historyIndex + 1),
+      { view: "liked", activePlaylist: null, searchQuery: "" },
+    ]);
+    setHistoryIndex((i) => i + 1);
+  };
+  const onOpenPlaylist = (p) => {
+    setHistory((h) => [
+      ...h.slice(0, historyIndex + 1),
+      { view: "playlist", activePlaylist: p, searchQuery: "" },
+    ]);
+    setHistoryIndex((i) => i + 1);
+  };
 
   return (
     <div className="spotify-clone">
@@ -1008,6 +1270,10 @@ export default function SpotifyClone() {
         onHomeClick={goToHome}
         onLikedClick={goToLiked}
         currentView={view}
+        playlists={playlists}
+        likedPlaylists={likedPlaylists}
+        onOpenPlaylist={onOpenPlaylist}
+        activePlaylist={currentActivePlaylist}
       />
       <main className="main-view">
         <Header
@@ -1019,7 +1285,6 @@ export default function SpotifyClone() {
           canForward={historyIndex < history.length - 1}
         />
         <MainView
-          // CORREÇÃO: 'key' aqui força a remontagem do componente quando a playlist muda
           key={
             view + (currentActivePlaylist ? "-" + currentActivePlaylist.id : "")
           }
@@ -1031,14 +1296,17 @@ export default function SpotifyClone() {
           playSong={playSong}
           view={view}
           activePlaylist={currentActivePlaylist}
-          onOpenPlaylist={openPlaylist}
+          onOpenPlaylist={onOpenPlaylist}
           onRenamePlaylist={renamePlaylist}
           onAddSongToPlaylist={addSongToPlaylist}
           onRemoveSongFromPlaylist={removeSongFromPlaylist}
+          onDeletePlaylist={deletePlaylist}
+          likedPlaylists={likedPlaylists}
+          togglePlaylistLike={togglePlaylistLike}
+          onPlayPlaylist={handlePlayPlaylist} // Passando a nova função
         />
       </main>
       <Player
-        // CORREÇÃO: 'key' aqui força a remontagem do player (resetando o timer) quando a música muda
         key={currentSong.id}
         currentSong={currentSong}
         isPlaying={isPlaying}
@@ -1048,6 +1316,10 @@ export default function SpotifyClone() {
         onSongEnd={handleSongEnd}
         repeatMode={repeatMode}
         toggleRepeat={toggleRepeat}
+        isShuffled={isShuffled}
+        toggleShuffle={toggleShuffle}
+        onSkipNext={skipNext}
+        onSkipPrev={skipPrev}
       />
     </div>
   );
